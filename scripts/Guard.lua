@@ -17,8 +17,8 @@ Guard = script_class()
 ---@param ctx ScriptContext
 ---@return boolean
 function Guard:try_attack_player(ctx)
-    local player_pos = ctx.scene.graph[ctx.plugins:get("Game").player]:global_position()
-    local self_pos = ctx.scene.graph[ctx.handle]:global_position()
+    local player_pos = ctx.plugins:get("Game").player:global_position()
+    local self_pos = ctx.handle:global_position()
     local sight_vector = player_pos:sub(self_pos)
     print(string.format(
         "try attack player. player_pos: %s, self_pos: %s",
@@ -57,16 +57,15 @@ function Guard:can_see_player(ctx, player_pos, sight_vector)
         sort_results = true
     }
     local results = {}
-    ctx.scene.graph.physics:cast_ray(ctx, opts, results)
+    physics:cast_ray(ctx, opts, results)
     for i, hit in ipairs(results) do
-        local handle = hit.collider
-        if handle ~= self.collider then
-            while handle.is_some() do
-                local node = ctx.scene.graph[handle]
+        local node = hit.collider
+        if node ~= self.collider then
+            while node:is_some() do
                 if node:has_script("Player") then
                     return true
                 end
-                handle = node:parent()
+                node = node:parent()
             end
             return false
         end
@@ -87,7 +86,7 @@ function Guard:move_to_waypoint(ctx)
         local beacons = ctx.plugins:get("Game").beacons;
         self.current_waypoint = beacons[math.random(#beacons)]
     end
-    local pos = ctx.scene.graph[ctx.handle]
+    local pos = ctx.handle
         :local_transform()
         :position()
         :get_value_ref();
@@ -96,7 +95,7 @@ function Guard:move_to_waypoint(ctx)
         self.current_waypoint = nil;
     else
         local force = vector_to_beacon.normalize() * self.move_power;
-        ctx.scene.graph[ctx.handle]
+        ctx.handle
             :as_rigid_body_mut()
             :unwrap()
             :apply_force(force);
@@ -132,7 +131,7 @@ end
 function Guard:on_message(ctx, message)
     local bullet = message:downcast_ref("BulletHit")
     if bullet then
-        ctx.scene.graph:remove_node(ctx.handle);
+        ctx.handle:remove_node();
         ctx.plugins:get_mut("Game").frags = ctx.plugins:get_mut("Game").frags + 1;
         print("guard killed!")
     end

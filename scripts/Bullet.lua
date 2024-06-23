@@ -20,7 +20,6 @@ local BulletSeed = {}
 function Bullet:spawn(scene, seed)
     local orientation = UnitQuaternion:face_towards(seed.direction, Vector3:y_axis());
     local bullet = seed.prefab:instantiate_at(scene, seed.origin, orientation);
-    local bullet = scene.graph[bullet];
     bullet:add_script(Bullet:new({
         velocity = seed.direction:normalize() * seed.initial_velocity,
         remaining_sec = seed.range / seed.initial_velocity,
@@ -32,10 +31,10 @@ end
 function Bullet:on_update(ctx)
     self.remaining_sec = self.remaining_sec - ctx.dt
     if self.remaining_sec <= 0.0 then
-        ctx.scene.graph:remove_node(ctx.handle)
+        ctx.handle:remove_node()
         return;
     end
-    local t = ctx.scene.graph[ctx.handle]:local_transform_mut()
+    local t = ctx.handle:local_transform_mut()
     local new_pos = t:position():add(self.velocity * ctx.dt)
 
     ---@type RayCastOptions
@@ -46,18 +45,18 @@ function Bullet:on_update(ctx)
         sort_results= true
     }
     local results = {}
-    ctx.scene.graph.physics:cast_ray(opts, results)
+    physics:cast_ray(opts, results)
 
     for hit in ipairs(results) do
         if hit.collider ~= self.author_collider then
             ctx.message_sender
                 .send_hierarchical(hit.collider, RoutingStrategy.Up, BulletHit:new())
-            ctx.scene.graph:remove_node(ctx.handle);
+				ctx.handle:remove_node();
             return;
         end
     end
 
-    ctx.scene.graph[ctx.handle]
+    ctx.handle
         :local_transform_mut()
         :set_position(new_pos);
 end

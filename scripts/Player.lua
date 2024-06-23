@@ -22,7 +22,7 @@ local fire = false
 
 ---@param x number
 function Player:turn(x, ctx)
-    local self_transform = ctx.scene.graph[ctx.handle].local_transform_mut();
+    local self_transform = ctx.handle.local_transform_mut();
     local rot_delta = Rotation3:from_axis_angle(Vector3:y_axis(), self.sensitivity * x);
     self_transform.set_rotation(self_transform.rotation().mul(rot_delta));
 end
@@ -32,7 +32,7 @@ function Player:aim(ctx, y)
 
     aim_y = aim_y.clamp(math.pi / 2.0, math.pi / 2.0);
 
-    local camera_transform = ctx.scene.graph[self.camera].local_transform_mut();
+    local camera_transform = self.camera.local_transform_mut();
     camera_transform.set_rotation(UnitQuaternion:from_axis_angle(
         Vector3:x_axis(),
         aim_y
@@ -40,8 +40,8 @@ function Player:aim(ctx, y)
 end
 
 function Player:fire(ctx)
-    local camera_global_transform = ctx.scene.graph[self.camera].global_transform();
-    local camera_pos = ctx.scene.graph[self.camera].global_position();
+    local camera_global_transform = self.camera.global_transform();
+    local camera_pos = self.camera.global_position();
 
     local rot = camera_global_transform.fixed_view("3x3", 0, 0);
     local bullet_orientation = UnitQuaternion:from_matrix(rot);
@@ -121,13 +121,13 @@ function Player:on_update(ctx)
         move_delta.normalize_mut();
     end
 
-    local self_rotation = ctx.scene.graph[ctx.handle]
+    local self_rotation = ctx.handle
         .local_transform()
         .rotation()
         .clone();
     local move_delta = self_rotation.transform_vector(move_delta);
     local force = move_delta * self.power;
-    ctx.scene.graph[ctx.handle]
+    ctx.handle
         .as_rigid_body_mut()
         .apply_force(force);
 end
