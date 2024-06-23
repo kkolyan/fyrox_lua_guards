@@ -132,7 +132,7 @@ function Guard:on_message(ctx, message)
     local bullet = message:downcast_ref("BulletHit")
     if bullet then
         ctx.handle:remove_node();
-        ctx.plugins:get_mut("Game").frags = ctx.plugins:get_mut("Game").frags + 1;
+        ctx.plugins:get_mut("Game"):inc_frags()
         print("guard killed!")
     end
 end

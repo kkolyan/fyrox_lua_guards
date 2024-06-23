@@ -82,7 +82,7 @@ end
 function Player:on_message(message, ctx)
     local _bullet = message.downcast_ref("BulletHit")
     if _bullet ~= nil then
-        ctx.plugins.get_mut("Game").wounds = ctx.plugins.get_mut("Game").wounds + 1
+        ctx.plugins.get_mut("Game"):inc_wounds()
         print("player wounded!")
     end
 end

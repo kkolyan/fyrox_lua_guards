@@ -35,3 +35,34 @@ function script_class() end
 
 ---@return Plugin
 function plugin_class() end
+
+
+---@class UiNode
+UiNode = {}
+
+---@class TextBuilder
+---@field font_size number?
+---@field text string?
+---@field widget WidgetBuilder?
+TextBuilder = {}
+
+---@param b TextBuilder
+---@return UiNode
+function TextBuilder:build(ui, b) end
+
+---@class WidgetBuilder
+---@field foreground Brush?
+WidgetBuilder = {}
+
+
+---@class Brush
+Brush = {}
+
+---@param color Color
+function Brush.Solid(color) end
+
+---@class Color
+Color = {}
+
+---@type Color
+Color.BLACK = nil
