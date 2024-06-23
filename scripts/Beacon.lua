@@ -4,8 +4,8 @@ Beacon = script_class()
 
 ---@param ctx ScriptContext
 function Beacon:on_update(ctx)
-	local pos = ctx.scene.graph[ctx.handle]:global_position()
-	table.insert(ctx.plugins:get_mut("Game").beacons, pos)
-	ctx.scene.graph:remove_node(ctx.handle);
-	print("beacon registered: {:?}", ctx.handle);
+    local pos = ctx.scene.graph[ctx.handle]:global_position()
+    table.insert(ctx.plugins:get_mut("Game").beacons, pos)
+    ctx.scene.graph:remove_node(ctx.handle);
+    print("beacon registered: {:?}", ctx.handle);
 end

@@ -18,46 +18,46 @@ local BulletSeed = {}
 ---@param scene Scene
 ---@param seed BulletSeed
 function Bullet:spawn(scene, seed)
-	local orientation = UnitQuaternion:face_towards(seed.direction, Vector3:y_axis());
-	local bullet = seed.prefab:instantiate_at(scene, seed.origin, orientation);
-	local bullet = scene.graph[bullet];
-	bullet:add_script(Bullet:new({
-		velocity = seed.direction:normalize() * seed.initial_velocity,
-		remaining_sec = seed.range / seed.initial_velocity,
-		author_collider = seed.author_collider,
-	}))
+    local orientation = UnitQuaternion:face_towards(seed.direction, Vector3:y_axis());
+    local bullet = seed.prefab:instantiate_at(scene, seed.origin, orientation);
+    local bullet = scene.graph[bullet];
+    bullet:add_script(Bullet:new({
+        velocity = seed.direction:normalize() * seed.initial_velocity,
+        remaining_sec = seed.range / seed.initial_velocity,
+        author_collider = seed.author_collider,
+    }))
 end
 
 ---@param ctx ScriptContext
 function Bullet:on_update(ctx)
-	self.remaining_sec = self.remaining_sec - ctx.dt
-	if self.remaining_sec <= 0.0 then
-		ctx.scene.graph:remove_node(ctx.handle)
-		return;
-	end
-	local t = ctx.scene.graph[ctx.handle]:local_transform_mut()
-	local new_pos = t:position():add(self.velocity * ctx.dt)
+    self.remaining_sec = self.remaining_sec - ctx.dt
+    if self.remaining_sec <= 0.0 then
+        ctx.scene.graph:remove_node(ctx.handle)
+        return;
+    end
+    local t = ctx.scene.graph[ctx.handle]:local_transform_mut()
+    local new_pos = t:position():add(self.velocity * ctx.dt)
 
-	---@type RayCastOptions
-	local opts = {
-		ray_origin= Point3:from(t:position():get_value_ref()),
-		ray_direction= self.velocity:normalize(),
-		max_len=self.velocity:magnitude() * ctx.dt,
-		sort_results= true
-	}
-	local results = {}
-	ctx.scene.graph.physics:cast_ray(opts, results)
+    ---@type RayCastOptions
+    local opts = {
+        ray_origin= Point3:from(t:position():get_value_ref()),
+        ray_direction= self.velocity:normalize(),
+        max_len=self.velocity:magnitude() * ctx.dt,
+        sort_results= true
+    }
+    local results = {}
+    ctx.scene.graph.physics:cast_ray(opts, results)
 
-	for hit in ipairs(results) do
-		if hit.collider ~= self.author_collider then
-			ctx.message_sender
-				.send_hierarchical(hit.collider, RoutingStrategy.Up, BulletHit:new())
-			ctx.scene.graph:remove_node(ctx.handle);
-			return;
-		end
-	end
+    for hit in ipairs(results) do
+        if hit.collider ~= self.author_collider then
+            ctx.message_sender
+                .send_hierarchical(hit.collider, RoutingStrategy.Up, BulletHit:new())
+            ctx.scene.graph:remove_node(ctx.handle);
+            return;
+        end
+    end
 
-	ctx.scene.graph[ctx.handle]
-		:local_transform_mut()
-		:set_position(new_pos);
+    ctx.scene.graph[ctx.handle]
+        :local_transform_mut()
+        :set_position(new_pos);
 end
