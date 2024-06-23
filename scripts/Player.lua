@@ -49,7 +49,7 @@ function Player:fire(ctx)
     local prefab = self.bullet.as_ref().unwrap().clone();
     Bullet:spawn(
         ctx.scene,
-        BulletSeed {
+        {
             prefab = prefab,
             origin = camera_pos,
             direction = bullet_orientation.transform_vector(Vector3:z_axis()),
